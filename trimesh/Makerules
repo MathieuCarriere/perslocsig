@@ -64,9 +64,9 @@ $(OBJDIR) $(DESTDIR):
 	-mkdir $@
 
 ifdef MAKERULESDIR
-        include $(MAKERULESDIR)/Makedefs_adapted.$(UNAME)
+        include $(MAKERULESDIR)/Makedefs.$(UNAME)
 else
-        include Makedefs_adapted.$(UNAME)
+        include Makedefs.$(UNAME)
 endif
 
 ifdef DEBUG
