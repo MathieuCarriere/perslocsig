@@ -26,9 +26,7 @@ CCFILES =	TriMesh_bounding.cc \
 		reorder_verts.cc \
 		shared.cc \
 		subdiv.cc \
-                Dijkstra.cc \
-                feature.cc \
-                princeton_labels.cc
+           Dijkstra.cc
 
 
 OFILES = $(addprefix $(OBJDIR)/,$(CCFILES:.cc=.o))
