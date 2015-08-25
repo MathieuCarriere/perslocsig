@@ -5,7 +5,9 @@ After compiling, running the executables in a terminal with no arguments will sh
 
 persistence_UF contains the C++ code to compute 1D persistence on 3D shapes using symmetry. It needs the "trimesh" library and the "ANN" one (for point clouds only). If you only want to compute PDs on 3D shapes and do not have access to the "ANN" library, comment the C++ code in persistence.cpp that deals with point clouds. To compile the "trimesh" library type the following command in a terminal:
 
-cd trimesh/libsrc
+cd trimesh/
+mkdir lib.Linux64
+cd libsrc
 make
 cd ../..
 
