@@ -1,4 +1,6 @@
-Warning!!! This code requires Boost and C++11
+This code is an implementation of the algorithm described and used in
+Stable topological signatures for points on 3D shapes, Carriere et al, SGP 2015
+It requires Boost and C++11.
 
 **********
 
