@@ -1,47 +1,41 @@
-Warning!!! The code has only been tested with g++ on Linux.
-After compiling, running the executables in a terminal with no arguments will show you the arguments the executables expect.
+Warning!!! This code requires Boost and C++11
 
 **********
 
-persistence_UF contains the C++ code to compute 1D persistence on 3D shapes using symmetry. It needs the "trimesh" library and the "ANN" one (for point clouds only). If you only want to compute PDs on 3D shapes and do not have access to the "ANN" library, comment the C++ code in persistence.cpp that deals with point clouds. To compile the "trimesh" library type the following command in a terminal:
+persistence_UF.cpp contains the C++ code to compute 1D persistence using symmetry. It requires a neighborhood graph and a function defined on the vertices of this graph.
+To compile the code, run the following command in a terminal:
 
-cd trimesh/
-mkdir lib.Linux64
-cd libsrc
-make
-cd ../..
+g++ persistence_UF.cpp -o persUF -std=c++11
 
-To compile the code, run the following command in a terminal.
+Assuming the function is given in a file F.txt as follows:
 
-mkdir bin
-cd persistence_UF/
-g++ persistence.cpp -o ../bin/persistence -I ../trimesh/include/ -I ../ann/ann_1.1.1/include/ -L ../trimesh/lib.Linux64/ -L ../ann/ann_1.1.1/lib/ -ltrimesh -lANN -fopenmp
-cd ../
+line 1 <func_vertex_0> <func_vertex_1> <func_vertex_2> <func_vertex_3> ... <func_vertex_n>
+line 2 <empty>
 
-Parameters for the "persistence" executable that is created in the bin folder are:
+and the neighborhood graph is given in a file N.txt as follows:
 
-1. Type of the object -- "3DShape" or "PointCloud"
+line 1 <idx_0th_neighbor_of_0> <idx_1st_neighbor_of_0> <idx_2nd_neighbor_of_0> ... <idx_N0th_neighbor_of_0>
+line 2 <idx_0th_neighbor_of_1> <idx_1st_neighbor_of_1> <idx_2nd_neighbor_of_1> ... <idx_N1th_neighbor_of_1>
+.
+.
+.
+line n <idx_0th_neighbor_of_n> <idx_1st_neighbor_of_n> <idx_2nd_neighbor_of_n> ... <idx_Nnth_neighbor_of_n>
 
-2. Name of the object -- e.g.: "1.off"
+where point 0 has N0 neighbors, point 1 has N1 neighbors and so on, then the persistence diagram of point idx is computed by running the following command in a terminal:
 
-3. Type of the function that induces the PD -- "loc" for functions anchored at base points (e.g. distance functions, as in the article) or "glo" for global functions
+(cat F.txt && cat N.txt) | ./persUF 0
 
-4. Name of the functions -- e.g. "geo" for distance functions, but also "hks", "cur", "ecc"... Warning!!! The code expects that a binary file containing the values of the functions is present in the directory. You may need to modify the code that reads the functions values ("shape.h") according to the shape of your function bianry file.
+Note that running:
 
-5. Name of the data structure used to compute the PD -- always type "UF" for Union-Find if you deal with 3D shapes. "filtration" is when you already have executables that can compute PDs with a give filtration file.
+(cat F.txt && cat N.txt) | ./persUF 1
 
-6. (optional) delta parameter for the neighborhood graph if you have point clouds. If you only deal with 3D shapes, leave this field blank.
+will give you the indices of the pair of vertices that lead to the corresponding point in the persistence diagram.
+In the specific case of 3D shapes given in .off file format, we provide graph_geodesic.cpp that computes the geodesic distances to a given point using Boost's Dijkstra algorithm, 
+and graph_neighbors.cpp that retrieves the neighbors from the triangulation.
+For instance, computing the persistence diagram of point x of the 3D shape given in file.off is done with:
 
-**********
+( ./graph_geodesic file.off x && ./graph_neighbors) | ./persUF 0
 
-signature.cpp contains the code to compute the topological signature on a given PD. Type the following in a terminal.
+We also provide compute_PD.sh, which is a bash script that computes the persistence diagrams for all points of all shapes of a given 3D shape category ("airplane", "hand"...).
 
-g++ signature.cpp -o bin/signature
-
-Parameters for the "signature" executable are:
-
-1. Name of your PD -- e.g.: "PersistenceDiagram_geo_loc_Value_1"
-
-2. Quantity to compute -- "SC" for the signature vectors or "AGD" for the means of the previous vectors
-
-3. Dimension. Needed only if you compute "AGD". Specify the number of components you want to use to compute the mean.
+ 
