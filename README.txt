@@ -39,5 +39,6 @@ For instance, computing the persistence diagram of point x of the 3D shape given
 ( ./graph_geodesic file.off x && ./graph_neighbors) | ./persUF 0
 
 We also provide compute_PD.sh, which is a bash script that computes the persistence diagrams for all points of all shapes of a given 3D shape category ("airplane", "hand"...).
+Code for the vectorizations of these diagrams is available in the GUDHI library under the name "persistence vectors": http://gudhi.gforge.inria.fr/doc/latest/group___persistence__representations.html
 
  
