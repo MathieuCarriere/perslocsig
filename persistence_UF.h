@@ -21,6 +21,8 @@
 #include <string>
 
 #include "union_find.h"
+#include "graph_geodesic.h"
+#include "graph_neighbors.h"
 
 using namespace std;
 
@@ -29,8 +31,9 @@ struct vertex {
     double value;
 };
 
-pair<vector<pair<int,int> >, vector<pair<double,double> > >
-compute_PD_with_UF(const vector<double> & f, const vector<vector<int> > & neighb){
+using Persistence_idx_val = pair<vector<pair<int,int> >, vector<pair<double,double> > >;
+
+Persistence_idx_val compute_PD_with_UF(vector<double> & f, vector<vector<int> > & neighb){
 
     int num_points = neighb.size();
     vector<int> neighbors, neighborsp;
@@ -79,7 +82,7 @@ compute_PD_with_UF(const vector<double> & f, const vector<vector<int> > & neighb
                     int n = UF_find(neighbors[k], &parents);
                     int pn;
 
-                    for (int k = 0; k < entries.size(); k++)
+                    for (size_t k = 0; k < entries.size(); k++)
                         if (entries[k].first == n){
                             pn = v_vect[k];
                             neighborsp.push_back(pn);
@@ -96,7 +99,7 @@ compute_PD_with_UF(const vector<double> & f, const vector<vector<int> > & neighb
                 int v = max_neighb;
                 int vp = UF_find(v, &parents);
 
-                for (int k = 0; k < entries.size(); k++)
+                for (size_t k = 0; k < entries.size(); k++)
                     if (entries[k].first == vp){
                         entries[k].second += 1;
                         break;
@@ -113,13 +116,13 @@ compute_PD_with_UF(const vector<double> & f, const vector<vector<int> > & neighb
                     int np = UF_find(n, &parents);
                     int vp = UF_find(v, &parents);
 
-                    for (int k = 0; k < entries.size(); k++)
+                    for (size_t k = 0; k < entries.size(); k++)
                         if (entries[k].first == vp){
                             indv = k;
                             break;
                         }
 
-                    for (int k = 0; k < entries.size(); k++)
+                    for (size_t k = 0; k < entries.size(); k++)
                         if (entries[k].first == np){
                             indn = k;
                             break;
@@ -164,60 +167,20 @@ compute_PD_with_UF(const vector<double> & f, const vector<vector<int> > & neighb
     sort(pd_ind.begin(), pd_ind.end(), [=](const pair<int,int> & a, const pair<int,int> & b){return abs(f[a.first]-f[a.second]) > abs(f[b.first]-f[b.second]);});
     sort(pd_val.begin(), pd_val.end(), [=](const pair<double,double> & a, const pair<double,double> & b){return abs(a.first-a.second) > abs(b.first-b.second);});
 
-    pair<vector<pair<int,int> >, vector<pair<double,double> > > PD;
-    PD.first = pd_ind; PD.second = pd_val;
-    return PD;
+    Persistence_idx_val diag; diag.first = pd_ind; diag.second = pd_val;
+
+    return diag;
 
 }
 
-int main (int argc, char** argv) {
+vector<Persistence_idx_val> compute_PDs_from_off(string name, vector<int> idx){
 
-    vector<double> function; vector<vector<int> > neighbors;
+  vector<vector<int> > neighbors = graph_neighbors(name);
+  vector<vector<double> > dist   = graph_geodesic(name);
+  int numpts = idx.size();
+  vector<Persistence_idx_val> PDs(numpts);
+  for(int i = 0; i < numpts; i++)  PDs[i] = compute_PD_with_UF(dist[idx[i]], neighbors);
 
-    int tok = atoi(argv[1]);
+  return PDs;
 
-    int num_points;
-
-    double x; int k = 0;
-    string line; getline(cin,line); stringstream streamf(line);
-    while(streamf >> x){
-        function.push_back(x);
-        k++;
-    }
-
-    cin >> ws;
-    num_points = k;
-
-    for (int i = 0; i < num_points; i++) neighbors.emplace_back();
-
-    k = 0;
-
-    while(getline(cin,line) && k < num_points){
-      int n;
-      stringstream streamn(line);
-      while(streamn >> n)
-          neighbors[k].push_back(n);
-      cin >> ws;
-      k++;
-    }
-
-    pair<vector<pair<int,int> >, vector<pair<double,double> > > PD = compute_PD_with_UF(function,neighbors);
-
-    if(tok){
-      for(int i = 0; i < PD.second.size(); i++)
-        cout << PD.first[i].second << " " << PD.first[i].first << endl;
-      }
-    else{
-      for(int i = 0; i < PD.second.size(); i++){
-        if(i==0){
-          cout << PD.second[i].second << " inf 0" << endl;
-          cout << PD.second[i].first << " inf 2" << endl;
-        }
-        else
-          cout << PD.second[i].second << " " << PD.second[i].first << " 1" << endl;
-      }
-    }
-
-
-    return 0;
 }

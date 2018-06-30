@@ -38,31 +38,31 @@ int UF_find(int i, vector<int>* parents){
     }
 
     return i;
-    
+
 }
 
 void UF_union(int i, int j, int v, vector<pair<int,int> >* entries, vector<int>* parents, vector<int>* v_vect){
 
     int x = UF_find(i, parents);
     int y = UF_find(j, parents);
-    
+
     int ind_x, ind_y;
-    
-    for (int i = 0; i < (*entries).size(); i++)
+
+    for (size_t i = 0; i < (*entries).size(); i++)
         if ((*entries)[i].first == x){
             ind_x = i;
             break;
         }
-    
-    for (int i = 0; i < (*entries).size(); i++)
+
+    for (size_t i = 0; i < (*entries).size(); i++)
         if ((*entries)[i].first == y){
             ind_y = i;
             break;
         }
-            
-    
+
+
     if (x != y){
-    
+
         if ((*entries)[ind_x].second > (*entries)[ind_y].second){
             (*parents)[y] = x;
             (*entries)[ind_x].second += (*entries)[ind_y].second;
@@ -78,7 +78,7 @@ void UF_union(int i, int j, int v, vector<pair<int,int> >* entries, vector<int>*
             (*v_vect).erase((*v_vect).begin()+ind_x);
         }
     }
-    
+
 }
 
 #endif	/* UNION_FIND_H */

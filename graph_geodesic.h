@@ -35,22 +35,22 @@ using Weight_map = boost::property_map<Graph, boost::edge_weight_t>::type;
 
 using namespace std;
 
-int main (int argc, char** argv) {
+vector<vector<double> > graph_geodesic(string name){
 
-    string name = argv[1]; int idx = atoi(argv[2]); int numpts, numfaces, numedges;
+    int numpts, numfaces, numedges;
     Graph graph; vector<Vertex_t> vertices; vector<vector<double> > distances; vector<vector<double> > point_cloud;
 
     // Read file.
 
     ifstream input(name); string line; int i;
     getline(input, line); // Read "OFF"
-    getline(input, line); stringstream stream(line); stream >> numpts; stream >> numfaces; stream >> numedges; vector<double> dmap(numpts);
+    getline(input, line); stringstream stream(line); stream >> numpts; stream >> numfaces; stream >> numedges;
 
     i = 0;
     while (i < numpts) {
       getline(input, line); stringstream iss(line); vector<double> point;
       point.assign(istream_iterator<double>(iss), istream_iterator<double>()); point_cloud.emplace_back(point.begin(), point.begin() + 3);
-      vertices.push_back(boost::add_vertex(graph));
+      vertices.push_back(boost::add_vertex(graph)); distances.emplace_back(numpts);
       i++;
     }
 
@@ -65,38 +65,19 @@ int main (int argc, char** argv) {
       i++;
     }
 
-    // Compute/read distances.
+    // Compute distances.
 
-    vector<double> zeros(numpts); double d;
-    for (int i = 0; i < numpts; i++) distances.push_back(zeros);
-    string name_dist = name; name_dist.append("_dist"); ifstream input_dist(name_dist.c_str(), ios::out | ios::binary);
-
-    if (input_dist.good()) {
-      for (int i = 0; i < numpts; i++) {
-        for (int j = i; j < numpts; j++) {
-          input_dist.read((char*)&d, 8); distances[i][j] = d; distances[j][i] = d;
-        }
-      }
-      input_dist.close();
-    } else {
-      input_dist.close(); ofstream output_dist(name_dist, ios::out | ios::binary);
-      for (int i = 0; i < numpts; i++) {
-        for (int j = i; j < numpts; j++) {
-          double dis = 0; for (int k = 0; k < 3; k++) dis += (point_cloud[i][k] - point_cloud[j][k])*(point_cloud[i][k] - point_cloud[j][k]); dis = sqrt(dis);
-          distances[i][j] = dis; distances[j][i] = dis; output_dist.write((char*)&dis, 8);
-        }
-      }
-      output_dist.close();
+    Index_map index = boost::get(boost::vertex_index, graph); Weight_map weight = boost::get(boost::edge_weight, graph); boost::graph_traits<Graph>::edge_iterator ei, ei_end;
+    for (boost::tie(ei, ei_end) = boost::edges(graph); ei != ei_end; ++ei){
+      int source = index[boost::source(*ei, graph)]; int target = index[boost::target(*ei, graph)];
+      double dis = 0; for (int k = 0; k < 3; k++) dis += (point_cloud[source][k] - point_cloud[target][k])*(point_cloud[source][k] - point_cloud[target][k]); dis = sqrt(dis);
+      boost::put(weight, *ei, dis);
     }
 
     // Dijkstra.
 
-    Index_map index = boost::get(boost::vertex_index, graph); Weight_map weight = boost::get(boost::edge_weight, graph); boost::graph_traits<Graph>::edge_iterator ei, ei_end;
-    for (boost::tie(ei, ei_end) = boost::edges(graph); ei != ei_end; ++ei)  boost::put(weight, *ei, distances[index[boost::source(*ei, graph)]][index[boost::target(*ei, graph)]]);
+    for (int idx = 0; idx < numpts; idx++)
+      boost::dijkstra_shortest_paths(graph, vertices[idx], boost::weight_map(weight).distance_map(boost::make_iterator_property_map(distances[idx].begin(), index)));
 
-    boost::dijkstra_shortest_paths(graph, vertices[idx], boost::weight_map(weight).distance_map(boost::make_iterator_property_map(dmap.begin(), index)));
-    for (int j = 0; j < numpts; j++)  cout << dmap[j] << " ";
-    cout << endl;
-
-    return 0;
+    return distances;
 }

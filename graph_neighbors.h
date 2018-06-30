@@ -23,9 +23,9 @@
 
 using namespace std;
 
-int main (int argc, char** argv) {
+vector<vector<int> > graph_neighbors(string name){
 
-    string name = argv[1]; int numpts, numfaces, numedges;
+    int numpts, numfaces, numedges;
 
     ifstream input(name); string line; int i;
     getline(input, line); // Read "OFF"
@@ -47,10 +47,9 @@ int main (int argc, char** argv) {
 
     for (int j = 0; j < numpts; j++){
       vector<int> neighbors_j = neighbors[j];
-      sort(neighbors_j.begin(), neighbors_j.end()); vector<int>::iterator it = unique(neighbors_j.begin(), neighbors_j.end()); neighbors_j.resize(distance(neighbors_j.begin(), it));
-      for (int k = 0; k < neighbors_j.size(); k++)  cout << neighbors_j[k] << " ";
-      cout << endl;
+      sort(neighbors[j].begin(), neighbors[j].end()); vector<int>::iterator it = unique(neighbors[j].begin(), neighbors[j].end()); neighbors[j].resize(distance(neighbors[j].begin(), it));
     }
 
-    return 0;
+    return neighbors;
+
 }
