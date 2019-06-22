@@ -1,3 +1,5 @@
+# Local persistence on 3D shapes with Union Find 
+
 This code is an implementation of the algorithm described and used in
 Stable topological signatures for points on 3D shapes, Carriere et al, SGP 2015
 It requires python, Boost and C++11. To compile the code, run the following command in a terminal:
